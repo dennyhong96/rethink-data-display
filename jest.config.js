@@ -5,5 +5,6 @@ module.exports = {
 		"^@lib(.*)$": "<rootDir>/src/lib$1",
 		"^@pages(.*)$": "<rootDir>/src/pages$1",
 		"^@styles(.*)$": "<rootDir>/src/styles$1",
+		"^@utils(.*)$": "<rootDir>/src/utils$1",
 	},
 };
