@@ -10,6 +10,7 @@ export default async (req, res) => {
 	const data = fs.readFileSync(path.resolve("_data", "users.json"));
 	const users = JSON.parse(data);
 
+	// Simulate api call delay
 	await mockAPIDelay();
 
 	return res.status(200).json({

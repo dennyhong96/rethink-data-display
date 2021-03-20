@@ -1,4 +1,6 @@
 import { createContext, useContext, useEffect, useReducer } from "react";
+import PropTypes from "prop-types";
+
 import reducer from "./reducer";
 import { changeRowPerPage, loadTable, switchPage, searchRecord } from "./actions";
 
@@ -7,7 +9,7 @@ export const UserRecordsContext = createContext();
 const INITIAL_STATE = {
 	userPages: {},
 	totalRecords: 0,
-	recordsPerPage: 25,
+	recordsPerPage: 10,
 	currPage: 0,
 	search: "",
 	loading: true,
@@ -28,13 +30,12 @@ export const UserRecordsProvider = ({ children }) => {
 
 	useEffect(() => {
 		(async () => {
+			// Fetch first page of uses on load
 			await loadTable(dispatch, state);
 		})();
 	}, []);
 
-	const currPageUsers = userPages[currPage];
-
-	const handleChangePage = async (event, newPage) => {
+	const handleChangePage = async (_, newPage) => {
 		await switchPage(dispatch, state)(newPage);
 	};
 
@@ -47,9 +48,12 @@ export const UserRecordsProvider = ({ children }) => {
 		searchRecord(dispatch)(evt.target.value);
 	};
 
+	const currPageUsers = userPages[currPage];
+
 	return (
 		<UserRecordsContext.Provider
 			value={{
+				// Slices
 				currPage,
 				totalRecords,
 				currPageUsers,
@@ -59,7 +63,7 @@ export const UserRecordsProvider = ({ children }) => {
 				loading,
 				searchResults,
 
-				//
+				// Actions
 				handleChangePage,
 				handleChangeRowsPerPage,
 				handleSearch,
@@ -70,36 +74,12 @@ export const UserRecordsProvider = ({ children }) => {
 	);
 };
 
+UserRecordsProvider.propTypes = {
+	children: PropTypes.node,
+};
+
+// Expose state slices and actions via a hook api
 export const useUserRecords = () => {
-	const {
-		currPage,
-		totalRecords,
-		currPageUsers,
-		recordsPerPage,
-		userPages,
-		search,
-		loading,
-		searchResults,
-
-		//
-		handleChangePage,
-		handleChangeRowsPerPage,
-		handleSearch,
-	} = useContext(UserRecordsContext);
-
-	return {
-		currPage,
-		totalRecords,
-		currPageUsers,
-		recordsPerPage,
-		userPages,
-		search,
-		loading,
-		searchResults,
-
-		//
-		handleChangePage,
-		handleChangeRowsPerPage,
-		handleSearch,
-	};
+	const context = useContext(UserRecordsContext);
+	return { ...context };
 };

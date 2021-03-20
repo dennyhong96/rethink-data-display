@@ -1,5 +1,15 @@
 import { listUsers, searchUser } from "@lib/api";
 
+import {
+	NEW_PAGE_LOADED,
+	CLEAR_SEARCH_RESULTS,
+	PAGE_SWITCHED,
+	ROW_PER_PAGE_CHANGED,
+	SEARCH_RESULTS_LOADED,
+	SEARCH_TEXT_CHANGED,
+	STARTED_LOADING,
+} from "./actionTypes";
+
 export const loadTable = async (dispatch, state) => {
 	const { recordsPerPage } = state;
 
@@ -9,7 +19,7 @@ export const loadTable = async (dispatch, state) => {
 	});
 
 	dispatch({
-		type: "NEW_PAGE_LOADED",
+		type: NEW_PAGE_LOADED,
 		payload: {
 			newPage: 0,
 			users,
@@ -21,14 +31,18 @@ export const loadTable = async (dispatch, state) => {
 export const switchPage = (dispatch, state) => async newPage => {
 	const { recordsPerPage, userPages } = state;
 
+	// If we already have records of that page
+	// Only change the page number slice of state
+	// No need to fetch remote data
 	if (userPages[newPage]) {
 		return dispatch({
-			type: "PAGE_SWITCHED",
+			type: PAGE_SWITCHED,
 			payload: newPage,
 		});
 	}
 
-	dispatch({ type: "STARTED_LOADING" });
+	// Start fetching remote data
+	dispatch({ type: STARTED_LOADING });
 
 	const { users, totalRecords } = await listUsers({
 		limit: recordsPerPage,
@@ -36,7 +50,7 @@ export const switchPage = (dispatch, state) => async newPage => {
 	});
 
 	return dispatch({
-		type: "NEW_PAGE_LOADED",
+		type: NEW_PAGE_LOADED,
 		payload: {
 			newPage,
 			users,
@@ -46,7 +60,7 @@ export const switchPage = (dispatch, state) => async newPage => {
 };
 
 export const changeRowPerPage = dispatch => async newRowsPerPage => {
-	dispatch({ type: "STARTED_LOADING" });
+	dispatch({ type: STARTED_LOADING });
 
 	const { users, totalRecords } = await listUsers({
 		limit: newRowsPerPage,
@@ -54,7 +68,7 @@ export const changeRowPerPage = dispatch => async newRowsPerPage => {
 	});
 
 	dispatch({
-		type: "ROW_PER_PAGE_CHANGED",
+		type: ROW_PER_PAGE_CHANGED,
 		payload: {
 			newRowsPerPage,
 			users,
@@ -64,19 +78,32 @@ export const changeRowPerPage = dispatch => async newRowsPerPage => {
 };
 
 export const searchRecord = dispatch => async newSearchText => {
+	// Update search text slice of state
 	dispatch({
-		type: "SEARCH_TEXT_CHANGED",
+		type: SEARCH_TEXT_CHANGED,
 		payload: newSearchText,
 	});
 
-	dispatch({ type: "STARTED_LOADING" });
+	// No need to search if user cleared search text field
+	// Clear search result slice of state
+	if (!newSearchText) {
+		return dispatch({
+			type: CLEAR_SEARCH_RESULTS,
+		});
+	}
 
+	// Start searching
+	dispatch({ type: STARTED_LOADING });
 	await searchUser({
 		search: newSearchText,
-		callback(results) {
+
+		// Use callback pattern to dispach results to state
+		// once the api is called after debounce timeout
+		// And we have got the results
+		callback({ result }) {
 			dispatch({
-				type: "SEARCH_RESULTS_LOADED",
-				payload: results,
+				type: SEARCH_RESULTS_LOADED,
+				payload: result,
 			});
 		},
 	});

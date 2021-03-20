@@ -1,5 +1,5 @@
+import { Fragment, useEffect } from "react";
 import Head from "next/head";
-import React from "react";
 import PropTypes from "prop-types";
 import { ThemeProvider } from "@material-ui/core/styles";
 import CssBaseline from "@material-ui/core/CssBaseline";
@@ -10,7 +10,7 @@ import theme from "@styles/theme";
 export default function MyApp(props) {
 	const { Component, pageProps } = props;
 
-	React.useEffect(() => {
+	useEffect(() => {
 		// MUI specific setup - Remove the server-side injected CSS.
 		const jssStyles = document.querySelector("#jss-server-side");
 		if (jssStyles) {
@@ -19,9 +19,9 @@ export default function MyApp(props) {
 	}, []);
 
 	return (
-		<React.Fragment>
+		<Fragment>
 			<Head>
-				<title>Rethink Question #2</title>
+				<title>Rethink Date Display</title>
 				<meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
 			</Head>
 			<ThemeProvider theme={theme}>
@@ -32,7 +32,7 @@ export default function MyApp(props) {
 					<Component {...pageProps} />
 				</UserRecordsProvider>
 			</ThemeProvider>
-		</React.Fragment>
+		</Fragment>
 	);
 }
 
